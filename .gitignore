@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.pytest_cache/
+
+# Environment Variables & Secrets
+.env
+config.json
+profiles.yml
+
+# dbt artifacts
+dbt_project/target/
+dbt_project/dbt_packages/
+dbt_project/logs/
+
+# Local Data/Logs
+logs/
+*.csv
+*.xml
+*.zip
+*.json
+.DS_Store
