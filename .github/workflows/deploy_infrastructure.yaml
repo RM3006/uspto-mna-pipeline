@@ -38,8 +38,11 @@ jobs:
           # 1. Look in infrastructure/snowflake
           # 2. Exclude the bootstrap directory
           # 3. Sort them (Crucial! So 01 runs before 02)
-          
+
           find infrastructure/snowflake -name "*.sql" -not -path "*/bootstrap/*" | sort | while read file; do
             echo "Deploying: $file"
-            ~/bin/snowsql -f "$file" -o exit_on_error=true -o friendly=false
+            ~/bin/snowsql -f "$file" \
+              -D developer_user="$SNOWSQL_USER" \
+              -o exit_on_error=true \
+              -o friendly=false
           done
