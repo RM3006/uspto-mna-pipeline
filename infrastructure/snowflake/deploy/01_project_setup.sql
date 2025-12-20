@@ -35,4 +35,4 @@ GRANT CREATE VIEW ON SCHEMA analytics TO ROLE uspto_role;
 
 -- 6. Grant to Developer
 -- 'developer_user' to be passed as an argument
-GRANT ROLE uspto_role TO USER identifier('&developer_user');
+GRANT ROLE uspto_role TO USER &developer_user;
