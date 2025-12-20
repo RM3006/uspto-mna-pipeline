@@ -13,7 +13,8 @@ on:
 
 jobs:
   deploy-snowflake-infra:
-    runs-on: ubuntu-latest
+    # Using ubuntu-22.04 instead of 'latest' (24.04) to support SnowSQL dependencies
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout Code
