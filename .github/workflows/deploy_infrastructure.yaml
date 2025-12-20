@@ -1,0 +1,45 @@
+name: Deploy Snowflake Infrastructure
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      # 1. Watch the whole infrastructure folder
+      - 'infrastructure/snowflake/**'
+      # 2. EXCLUDE the bootstrap folder 
+      - '!infrastructure/snowflake/bootstrap/**' 
+  workflow_dispatch:
+
+jobs:
+  deploy-snowflake-infra:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install SnowSQL
+        run: |
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.9-linux_x86_64.bash
+          SNOWSQL_DEST=~/bin SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.9-linux_x86_64.bash
+
+      - name: Execute Infrastructure Scripts
+        # 3. Snowflake credentials
+        env:
+          SNOWSQL_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT_2 }}
+          SNOWSQL_USER: ${{ secrets.SNOWFLAKE_USER_2 }}
+          SNOWSQL_PWD: ${{ secrets.SNOWFLAKE_PASSWORD_2 }}
+          SNOWSQL_ROLE: ${{ secrets.SNOWFLAKE_ROLE_2 }}
+        run: |
+          echo "Scanning for SQL files..."
+          
+          # Elite Move: Use 'find' to dynamically locate files
+          # 1. Look in infrastructure/snowflake
+          # 2. Exclude the bootstrap directory
+          # 3. Sort them (Crucial! So 01 runs before 02)
+          
+          find infrastructure/snowflake -name "*.sql" -not -path "*/bootstrap/*" | sort | while read file; do
+            echo "Deploying: $file"
+            ~/bin/snowsql -f "$file" -o exit_on_error=true -o friendly=false
+          done

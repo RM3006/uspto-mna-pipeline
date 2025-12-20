@@ -1,7 +1,7 @@
 /* --------------------------------------------------------------------------------
    DEPLOYMENT SCRIPT (AUTOMATED)
    Run as: CI_CD_ROLE (via GitHub Actions)
-   Description: Creates project-specific resources.
+   Description: Creates project-specific resources
    --------------------------------------------------------------------------------
 */
 
