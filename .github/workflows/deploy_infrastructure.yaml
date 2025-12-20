@@ -42,8 +42,8 @@ jobs:
 
           find infrastructure/snowflake -name "*.sql" -not -path "*/bootstrap/*" | sort | while read file; do
             echo "Deploying: $file"
-            ~/bin/snowsql -f "$file" \
-              -D developer_user="$SNOWSQL_USER" \
+            ~/bin/snowsql \
               -o exit_on_error=true \
-              -o friendly=false
+              -o friendly=false \
+              -q "SET developer_user = '$SNOWSQL_USER'; !source $file"
           done
