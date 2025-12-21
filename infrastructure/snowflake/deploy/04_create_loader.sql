@@ -20,8 +20,8 @@ BEGIN
             $1
         FROM @uspto_raw_stage
     )
-    FILE_FORMAT = (TYPE = 'XML' STRIP_OUTER_ELEMENT = TRUE)
-    PATTERN = '.*.zip'
+    FILE_FORMAT = USPTO_DB.RAW.XML_FORMAT
+    PATTERN = '.*.gz'
     ON_ERROR = 'SKIP_FILE';
 
     RETURN 'Data Load Completed Successfully';
