@@ -15,12 +15,14 @@ load_dotenv('.env.generated', override=True)
 AWS_ACCESS_KEY = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 BUCKET_NAME = os.getenv('AWS_BUCKET_NAME')
+USPTO_API_KEY = os.getenv('USPTO_API_KEY')
 
-# We only need the API URL now. The old BASE_URL is dead.
+# Official ODP API Endpoint
+# PASYR = Patent Assignment XML (Yearly). Change to 'PASDA' for Daily.
 PRODUCT_ID = "PASYR" 
-API_URL = f"https://data.uspto.gov/api/v1/dataset/{PRODUCT_ID}/files"
+API_URL = f"https://api.uspto.gov/api/v1/datasets/products/{PRODUCT_ID}"
 
-# 3. Dynamic Filter
+# 3. Dynamic Filter (Last 3 years)
 YEARS_TO_PROCESS = 3
 current_year = datetime.now().year
 TARGET_YEARS = [str(current_year - i) for i in range(YEARS_TO_PROCESS)]
@@ -28,9 +30,17 @@ TARGET_YEARS = [str(current_year - i) for i in range(YEARS_TO_PROCESS)]
 # --- HELPER: Session with Retry Logic ---
 def create_session():
     """
-    Creates a robust session that retries on connection failures.
+    Creates a robust session with Retries and Auth Headers.
     """
     session = requests.Session()
+    
+    # Add the API Key to headers (Required by USPTO)
+    if USPTO_API_KEY:
+        session.headers.update({"X-API-KEY": USPTO_API_KEY})
+    else:
+        # Warning only; allows script to run if key is missing (e.g. testing)
+        print("⚠️ WARNING: No USPTO_API_KEY found in .env. Request may fail.")
+
     retry_strategy = Retry(
         total=3,
         backoff_factor=1,
@@ -49,23 +59,38 @@ def get_zip_links(api_url):
     try:
         response = session.get(api_url, timeout=10)
         response.raise_for_status()
-        data = response.json() # Parse JSON response
+        data = response.json() 
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 401:
+            print(f"❌ API Unauthorized. Check your USPTO_API_KEY.")
+        elif e.response.status_code == 404:
+            print(f"❌ API 404 Error. Check PRODUCT_ID.")
+        else:
+            print(f"❌ API Error: {e}")
+        return []
     except Exception as e:
-        print(f"❌ API Error: {e}")
+        print(f"❌ Error parsing API response: {e}")
         return []
 
     zip_files = []
     
-    # The API returns a list of file objects
-    for file_info in data:
-        file_name = file_info.get('fileName', '')
-        download_url = file_info.get('downloadUrl', '')
+    # ODP API Structure: The files are inside 'productFileBag'
+    try:
+        files_list = data.get('productFileBag', [])
+        print(f"   Found {len(files_list)} total files in dataset.")
         
-        # Filter: Only .zip files
-        if file_name.endswith('.zip') and download_url:
-            zip_files.append(download_url)
+        for file_info in files_list:
+            file_name = file_info.get('fileName', '')
+            # The key for the download link is 'fileDownloadURI'
+            download_url = file_info.get('fileDownloadURI', '') 
             
-    print(f"✅ Found {len(zip_files)} files via API.")
+            if file_name.endswith('.zip') and download_url:
+                zip_files.append(download_url)
+                
+    except AttributeError:
+        print("❌ Unexpected JSON structure received.")
+            
+    print(f"✅ Found {len(zip_files)} valid zip files.")
     return zip_files
 
 def upload_to_s3(url, bucket):
@@ -77,9 +102,8 @@ def upload_to_s3(url, bucket):
         if not any(year in file_name for year in TARGET_YEARS):
             return
 
-    # 2. Initialize Clients (Session + S3)
+    # 2. Initialize Clients
     session = create_session()
-    
     s3 = boto3.client(
         's3', 
         aws_access_key_id=AWS_ACCESS_KEY,
@@ -120,7 +144,6 @@ def upload_to_s3(url, bucket):
         print(f"❌ Error processing {file_name}: {e}")
 
 if __name__ == "__main__":
-    # CORRECTED: Use API_URL, not BASE_URL
     links = get_zip_links(API_URL)
     
     for link in links:
