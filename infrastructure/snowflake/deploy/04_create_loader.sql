@@ -32,7 +32,7 @@ $$;
 -- triggers the procedure every last day of the month at 01:00 AM Paris, Europe timezone
 CREATE OR REPLACE TASK load_patent_xml_task
     WAREHOUSE = uspto_wh
-    SCHEDULE = '0 1 L * * Europe/Paris'
+    SCHEDULE = 'USING CRON 0 1 L * * Europe/Paris'
 AS
     CALL load_patent_xml_proc();
 
