@@ -6,11 +6,12 @@ USE ROLE uspto_role;
 USE DATABASE uspto_db;
 USE SCHEMA raw;
 
--- 1. Defining how to read the XML zip files
+-- 1. Create format for GZIP compressed XML files
 CREATE OR REPLACE FILE FORMAT xml_format
-  TYPE = 'XML'
-  COMPRESSION = AUTO
-  STRIP_OUTER_ELEMENT = FALSE;
+    TYPE = 'XML'
+    COMPRESSION = GZIP            -- Explicitly tells Snowflake to expect .gz
+    STRIP_OUTER_ELEMENT = TRUE
+;
 
 -- 2. Creating the Stage using the Integration
 -- Note: usage on the integration was granted in the admin script
