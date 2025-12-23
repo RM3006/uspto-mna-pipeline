@@ -33,7 +33,8 @@ GRANT CREATE STAGE ON SCHEMA raw TO ROLE uspto_role;
 GRANT CREATE TABLE ON SCHEMA raw TO ROLE uspto_role;
 GRANT CREATE FILE FORMAT ON SCHEMA raw TO ROLE uspto_role;
 GRANT CREATE VIEW ON SCHEMA analytics TO ROLE uspto_role;
-
+GRANT USAGE ON ALL FUNCTIONS IN SCHEMA uspto_db.raw TO ROLE uspto_role;
+GRANT USAGE ON FUTURE FUNCTIONS IN SCHEMA uspto_db.raw TO ROLE uspto_role;
 -- 6. Grant to Developer
 -- 'developer_user' to be passed as an argument
 GRANT ROLE uspto_role TO USER IDENTIFIER($developer_user);

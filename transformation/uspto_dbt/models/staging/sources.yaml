@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+    - name: uspto
+      database: uspto_db
+      schema: raw
+      tables:
+        - name: patent_assignment_xml
+
