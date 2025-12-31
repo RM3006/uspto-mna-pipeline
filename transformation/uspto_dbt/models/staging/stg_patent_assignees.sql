@@ -18,6 +18,8 @@ flattened AS (
         input => XMLGET(xml_content, 'patent-assignees'):"$", -- The list to explode
         outer => true -- Keep the record even if the list is empty
     ) AS assignee
+
+    QUALIFY ROW_NUMBER() OVER (PARTITION BY MD5(xml_content) ORDER BY loaded_at DESC) = 1
 )
 
 SELECT
