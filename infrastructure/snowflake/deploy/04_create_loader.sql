@@ -31,14 +31,14 @@ BEGIN
             metadata$filename   -- The dynamic filename from S3
         FROM @uspto_raw_stage
     (
-    FILE_FORMAT = 'uspto_xml_splitter_fmt'
-    PATTERN = '.*.gz'
-    ON_ERROR = 'CONTINUE')
+    FILE_FORMAT => 'uspto_xml_splitter_fmt',
+    PATTERN => '.*.gz'
+    )
     WHERE metadata$filename NOT IN (SELECT DISTINCT file_name FROM uspto_db.raw.patent_assignment_xml)
     ;
 
     -- 3. Clean, parse, and insert into final table
-    INSERT INTO raw.patent_assignment_xml (xml_content, file_name)
+    INSERT INTO uspto_db.raw.patent_assignment_xml (xml_content, file_name)
     SELECT 
         PARSE_XML(
             -- Locate start of tag and remove preceding header junk
@@ -60,7 +60,6 @@ CREATE OR REPLACE TASK load_patent_xml_task
     SCHEDULE = 'USING CRON 0 1 L * * Europe/Paris'
 AS
     CALL load_patent_xml_proc()
-WHERE
 ;
 
 -- 5. Resume the Task
