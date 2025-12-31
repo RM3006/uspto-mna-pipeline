@@ -60,7 +60,6 @@ CREATE OR REPLACE TASK load_patent_xml_task
     SCHEDULE = 'USING CRON 0 1 L * * Europe/Paris'
 AS
     CALL load_patent_xml_proc()
-WHERE
 ;
 
 -- 5. Resume the Task
