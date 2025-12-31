@@ -4,8 +4,8 @@
 WITH source AS (
     SELECT
         -- Extract keys early to avoid passing heavy XML blobs downstream
-        XMLGET(XMLGET(xml_content, 'assignment-record'), 'reel-no'):"$"::VARCHAR AS reel_no,
-        XMLGET(XMLGET(xml_content, 'assignment-record'), 'frame-no'):"$"::VARCHAR AS frame_no,
+        XMLGET(XMLGET(xml_content, 'assignment-record'), 'reel-no'):"$"::VARCHAR AS reel_number,
+        XMLGET(XMLGET(xml_content, 'assignment-record'), 'frame-no'):"$"::VARCHAR AS frame_number,
         
         -- Pre-calculate the node to flatten (Extract once per file)
         XMLGET(xml_content, 'patent-properties'):"$" AS properties_node
@@ -16,8 +16,8 @@ WITH source AS (
 
 flattened_patents AS (
     SELECT
-        reel_no,
-        frame_no,
+        reel_number,
+        frame_number,
         p.value AS patent_node
     FROM source,
     LATERAL FLATTEN(
@@ -32,8 +32,8 @@ flattened_patents AS (
 )
 
 SELECT
-    reel_no,
-    frame_no,
+    reel_number,
+    frame_number,
 
     -- Extract document details from the flattened patent node
     XMLGET(XMLGET(patent_node, 'document-id'), 'doc-number'):"$"::VARCHAR AS document_number,

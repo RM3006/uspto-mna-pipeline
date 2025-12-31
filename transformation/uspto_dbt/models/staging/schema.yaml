@@ -1,0 +1,50 @@
+version: 2
+
+models:
+  - name: stg_patent_assignments
+    description: Staging table for patent assignment records. One row per assignment (Reel/Frame).
+    columns:
+      - name: reel_number
+        description: Unique identifier for the assignment reel.
+        tests:
+          - not_null
+      - name: frame_number
+        description: Frame number within the reel.
+        tests:
+          - not_null
+      - name: recorded_date
+        description: The date the assignment was recorded.
+        tests:
+          - not_null
+
+  - name: stg_patent_assignees
+    description: Staging table for assignees. One row per assignee per assignment.
+    columns:
+      - name: reel_number
+        tests:
+          - not_null
+      - name: frame_number
+        tests:
+          - not_null
+      - name: assignee_name
+        description: Name of the entity receiving the patent rights.
+        tests:
+          - not_null
+
+  - name: stg_patent_properties
+    description: Staging table for patents involved in assignments. One row per patent per assignment.
+    columns:
+      - name: reel_number
+        tests:
+          - not_null
+      - name: frame_number
+        tests:
+          - not_null
+      - name: document_number
+        description: The patent document number (e.g., patent number or publication number).
+        tests:
+          - not_null
+      - name: document_date
+        description: Publication or issue date of the patent document.
+      - name: country
+        description: Country code of the patent document (usually US).
