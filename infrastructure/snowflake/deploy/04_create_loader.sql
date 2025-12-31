@@ -38,7 +38,7 @@ BEGIN
     ;
 
     -- 3. Clean, parse, and insert into final table
-    INSERT INTO raw.patent_assignment_xml (xml_content, file_name)
+    INSERT INTO uspto_db.raw.patent_assignment_xml (xml_content, file_name)
     SELECT 
         PARSE_XML(
             -- Locate start of tag and remove preceding header junk
