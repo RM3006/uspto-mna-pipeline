@@ -25,16 +25,17 @@ BEGIN
     );
 
     -- 2. Load data and capture the specific filename for each chunk
-    COPY INTO raw_xml_chunks_temp (raw_chunk, file_name)
-    FROM (
+    INSERT INTO raw_xml_chunks_temp (raw_chunk, file_name)
         SELECT 
             $1,                 -- The text chunk
             metadata$filename   -- The dynamic filename from S3
         FROM @uspto_raw_stage
-    )
+    (
     FILE_FORMAT = 'uspto_xml_splitter_fmt'
     PATTERN = '.*.gz'
-    ON_ERROR = 'CONTINUE';
+    ON_ERROR = 'CONTINUE')
+    WHERE metadata$filename NOT IN (SELECT DISTINCT file_name FROM uspto_db.raw.patent_assignment_xml)
+    ;
 
     -- 3. Clean, parse, and insert into final table
     INSERT INTO raw.patent_assignment_xml (xml_content, file_name)
@@ -58,7 +59,9 @@ CREATE OR REPLACE TASK load_patent_xml_task
     WAREHOUSE = uspto_wh
     SCHEDULE = 'USING CRON 0 1 L * * Europe/Paris'
 AS
-    CALL load_patent_xml_proc();
+    CALL load_patent_xml_proc()
+WHERE
+;
 
 -- 5. Resume the Task
 ALTER TASK load_patent_xml_task RESUME;
