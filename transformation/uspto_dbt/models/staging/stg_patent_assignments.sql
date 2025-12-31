@@ -19,8 +19,8 @@ xml_root AS (
         loaded_at,
         XMLGET(xml_content, 'assignment-record') AS record_node
     FROM source
-    
-    QUALIFY ROW_NUMBER() OVER (PARTITION BY xml_content ORDER BY loaded_at DESC) = 1
+
+    QUALIFY ROW_NUMBER() OVER (PARTITION BY MD5(xml_content) ORDER BY loaded_at DESC) = 1
 ),
 
 -- Step 2: Using 'record_node' to get the fields
