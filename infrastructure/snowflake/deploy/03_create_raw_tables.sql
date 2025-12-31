@@ -9,4 +9,3 @@ CREATE OR REPLACE TABLE patent_assignment_xml (
     xml_content VARIANT,
     loaded_at TIMESTAMP_NTZ DEFAULT to_timestamp_ntz(convert_timezone('Europe/Paris', current_timestamp()))
 );
-
