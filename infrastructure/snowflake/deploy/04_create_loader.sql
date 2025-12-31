@@ -31,9 +31,9 @@ BEGIN
             metadata$filename   -- The dynamic filename from S3
         FROM @uspto_raw_stage
     (
-    FILE_FORMAT = 'uspto_xml_splitter_fmt'
-    PATTERN = '.*.gz'
-    ON_ERROR = 'CONTINUE')
+    FILE_FORMAT => 'uspto_xml_splitter_fmt',
+    PATTERN => '.*.gz'
+    )
     WHERE metadata$filename NOT IN (SELECT DISTINCT file_name FROM uspto_db.raw.patent_assignment_xml)
     ;
 
