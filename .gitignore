@@ -27,3 +27,19 @@ logs/
 *.tfstate
 *.tfstate.backup
 *.terraform.lock.hcl
+
+# --- Orchestration / Airflow ---
+# Ignore execution logs
+orchestration/logs/
+*.log
+
+# Ignore Python cache files
+orchestration/__pycache__/
+orchestration/dags/__pycache__/
+*.pyc
+
+# Ignore environment variable files (security risk)
+orchestration/.env
+
+# Ignore Docker mount points if they were created locally
+orchestration/dbt/
