@@ -1,0 +1,74 @@
+version: 2
+
+models:
+  # ----------------------------------------------------
+  # Dimensions (The "Lookup" Tables)
+  # ----------------------------------------------------
+  - name: dim_patents
+    description: Registry of unique patents found in the assignment data.
+    columns:
+      - name: patent_sk
+        description: Surrogate Key (MD5 of document_number). Primary Key.
+        tests:
+          - unique
+          - not_null
+      - name: document_number
+        description: Natural Key (Patent Number).
+        tests:
+          - not_null
+
+  - name: dim_assignees
+    description: Registry of unique companies/entities involved in assignments.
+    columns:
+      - name: assignee_sk
+        description: Surrogate Key (MD5 of cleaned name). Primary Key.
+        tests:
+          - unique
+          - not_null
+      - name: assignee_name
+        description: Normalized name of the entity.
+        tests:
+          - not_null
+
+  - name: dim_assignments
+    description: Registry of unique assignment transactions (Reel/Frame).
+    columns:
+      - name: assignment_sk
+        description: Surrogate Key (MD5 of Reel + Frame). Primary Key.
+        tests:
+          - unique
+          - not_null
+      - name: reel_number
+        tests:
+          - not_null
+      - name: frame_number
+        tests:
+          - not_null
+
+  # ----------------------------------------------------
+  # Facts (The "Bridge" Table)
+  # ----------------------------------------------------
+  - name: fct_assignment_bridge
+    description: Link table connecting Assignments, Patents, and Assignees.
+    columns:
+      # Test: Referential Integrity (Foreign Keys must exist in Dimensions)
+      - name: assignment_sk
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_assignments')
+              field: assignment_sk
+
+      - name: patent_sk
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_patents')
+              field: patent_sk
+
+      - name: assignee_sk
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_assignees')
+              field: assignee_sk
