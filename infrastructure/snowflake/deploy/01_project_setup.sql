@@ -25,6 +25,7 @@ GRANT USAGE ON DATABASE uspto_db TO ROLE uspto_role;
 -- 4. Schema Setup
 USE DATABASE uspto_db;
 CREATE SCHEMA IF NOT EXISTS raw;
+CREATE SCHEMA IF NOT EXISTS staging;
 CREATE SCHEMA IF NOT EXISTS analytics;
 
 -- 5. Project Role Access
@@ -32,9 +33,10 @@ GRANT USAGE ON ALL SCHEMAS IN DATABASE uspto_db TO ROLE uspto_role;
 GRANT CREATE STAGE ON SCHEMA raw TO ROLE uspto_role;
 GRANT CREATE TABLE ON SCHEMA raw TO ROLE uspto_role;
 GRANT CREATE FILE FORMAT ON SCHEMA raw TO ROLE uspto_role;
-GRANT CREATE VIEW ON SCHEMA analytics TO ROLE uspto_role;
 GRANT USAGE ON ALL FUNCTIONS IN SCHEMA uspto_db.raw TO ROLE uspto_role;
 GRANT USAGE ON FUTURE FUNCTIONS IN SCHEMA uspto_db.raw TO ROLE uspto_role;
+GRANT ALL ON SCHEMA staging TO ROLE uspto_role;
+GRANT ALL ON SCHEMA analytics TO ROLE uspto_role;
 -- 6. Grant to Developer
 -- 'developer_user' to be passed as an argument
 GRANT ROLE uspto_role TO USER IDENTIFIER($developer_user);
