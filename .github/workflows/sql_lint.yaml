@@ -64,7 +64,18 @@ jobs:
           echo "      path: '/tmp/dbt.duckdb'" >> ~/.dbt/profiles.yml
           echo "      threads: 1" >> ~/.dbt/profiles.yml
 
-      - name: Run SQLFluff Lint
-        # This scans only the 'models' directory to save time
+      # Step 1: Lint the entire dbt project (Models and Tests only)
+      - name: Lint dbt Project (Models and Tests)
         run: |
-          sqlfluff lint transformation/uspto_dbt/models --dialect snowflake
+          sqlfluff lint transformation/uspto_dbt --dialect snowflake
+
+      # Step 2: Macros (Needs Jinja templater)
+      # We override the config to use 'jinja' just for this folder
+      - name: Lint dbt Macros (Jinja Templater)
+        run: |
+          sqlfluff lint transformation/uspto_dbt/macros --dialect snowflake --templater jinja
+
+      # Step 3: Lint the Infrastructure scripts (Raw SQL)
+      - name: Lint Infrastructure Scripts
+        run: |
+          sqlfluff lint infrastructure/snowflake --dialect snowflake --templater jinja
