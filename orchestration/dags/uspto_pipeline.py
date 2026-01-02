@@ -1,72 +1,63 @@
-from airflow import DAG
-from airflow.operators.bash import BashOperator
+import os
 import pendulum
+from airflow import DAG
+from cosmos import DbtDag, ProjectConfig, ProfileConfig, ExecutionConfig
 
 # 1. Define the timezone
+# Europe/Paris is used for local scheduling
 local_tz = pendulum.timezone("Europe/Paris")
 
-# 2. Define the failure callback function
-def print_failure_log(context):
-    """
-    Prints a standardized error message to the logs when a task fails.
-    """
-    task_instance = context['task_instance']
+# 2. Establish dynamic paths
+# Step 1: Utilize the standard Airflow home environment variable
+AIRFLOW_HOME = os.getenv("AIRFLOW_HOME", "/opt/airflow")
+
+# Step 2: Construct the path to the dbt project relative to Airflow Home
+# This ensures portability across different environments
+DBT_PROJECT_PATH = os.path.join(AIRFLOW_HOME, "transformation/uspto_dbt")
+
+# 3. Define the path to the dbt virtual environment executable
+# This points to the isolated venv created in the Dockerfile
+DBT_EXECUTABLE_PATH = os.path.join(AIRFLOW_HOME, "dbt_venv/bin/dbt")
+
+# 4. Set up the configurations
+# Step 1: Map the Snowflake profile and production target
+profile_config = ProfileConfig(
+    profile_name="uspto_dbt",
+    target_name="prod",
+    profiles_yml_filepath="/home/airflow/.dbt/profiles.yml"
+)
+
+# Step 2: Point to the virtual environment for dbt execution
+execution_config = ExecutionConfig(
+    dbt_executable_path=DBT_EXECUTABLE_PATH,
+)
+
+# 5. Define a function to handle failures
+def on_dag_failure(context):
+    # Step 1: Extract details from the Airflow context
+    task_instance = context.get('task_instance')
+    dag_id = context.get('dag').dag_id
     task_id = task_instance.task_id
-    dag_id = task_instance.dag_id
-    log_url = task_instance.log_url
+    execution_date = context.get('execution_date')
     
-    # This message will appear in the Airflow Task Logs
-    print(f"""
-    ############################################################
-    [CRITICAL FAILURE DETECTED]
-    DAG: {dag_id}
-    TASK: {task_id}
-    TIME: {pendulum.now(local_tz)}
-    
-    ACTION REQUIRED:
-    The dbt pipeline has stopped. Please check the logs above 
-    to diagnose the Snowflake or dbt error.
-    
-    Direct Log Link: {log_url}
-    ############################################################
-    """)
+    # Step 2: Print a high-visibility message to the logs
+    print("=" * 60)
+    print(f"🚨 ALERT: DAG [{dag_id}] FAILED 🚨")
+    print(f"Task: {task_id}")
+    print(f"Execution Date: {execution_date}")
+    print(f"Log URL: {task_instance.log_url}")
+    print("=" * 60)
 
-# 3. Default settings for the DAG
-default_args = {
-    'owner': 'romen',
-    'depends_on_past': False,
-    
-    # --- FAILURE HANDLING ---
-    'retries': 2,
-    'retry_delay': pendulum.duration(minutes=5),
-    'on_failure_callback': print_failure_log, # Triggers the function above
-    
-    # Disable email alerts to keep it simple
-    'email_on_failure': False,
-    'email_on_retry': False,
-}
-
-# 4. Overall DAG set up
-with DAG(
-    dag_id='uspto_daily_pipeline',
-    default_args=default_args,
-    description='Runs dbt pipeline for USPTO data',
-    schedule_interval='0 6 * * *', 
+# 6. Initialize the DbtDag
+# Step 1: Assemble all configurations into the DbtDag instance
+# Step 2: Set the schedule to 6:00 AM Paris time daily
+uspto_cosmos_dag = DbtDag(
+    project_config=ProjectConfig(DBT_PROJECT_PATH),
+    profile_config=profile_config,
+    execution_config=execution_config,
+    dag_id="uspto_cosmos_pipeline",
     start_date=pendulum.datetime(2024, 1, 1, tz=local_tz),
+    schedule_interval='0 6 * * *',
     catchup=False,
-    tags=['dbt', 'snowflake'],
-) as dag:
-
-    # Task 1: Check dbt connectivity
-    dbt_debug = BashOperator(
-        task_id='dbt_debug',
-        bash_command='cd /opt/airflow/dbt/uspto_dbt && dbt debug'
-    )
-
-    # Task 2: Run the Production Build
-    dbt_build = BashOperator(
-        task_id='dbt_build_prod',
-        bash_command='cd /opt/airflow/dbt/uspto_dbt && dbt build --target prod'
-    )
-    # 5. Define dependency
-    dbt_debug >> dbt_build
+    on_failure_callback=on_dag_failure
+)
