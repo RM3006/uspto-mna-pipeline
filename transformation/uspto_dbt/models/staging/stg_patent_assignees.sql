@@ -14,10 +14,10 @@ WITH
         SELECT
         -- Retain the keys so we can join back to the main table later
             GET(
-                XMLGET(XMLGET(xml_content, 'assignment-record'), 'reel-no'), '$'
+                XMLGET(XMLGET(source.xml_content, 'assignment-record'), 'reel-no'), '$'
             )::VARCHAR AS reel_number,
             GET(
-                XMLGET(XMLGET(xml_content, 'assignment-record'), 'frame-no'),
+                XMLGET(XMLGET(source.xml_content, 'assignment-record'), 'frame-no'),
                 '$'
             )::VARCHAR AS frame_number,
             assignee.value AS assignee_node
@@ -26,7 +26,7 @@ WITH
             -- LATERAL FLATTEN goes into the array and creates a row for each item in patent assignees
             LATERAL FLATTEN(
                 -- The list to explode
-                input => XMLGET(xml_content, 'patent-assignees'):"$",
+                input => XMLGET(source.xml_content, 'patent-assignees'):"$",
                 outer => true -- Keep the record even if the list is empty
             ) AS assignee
     )
