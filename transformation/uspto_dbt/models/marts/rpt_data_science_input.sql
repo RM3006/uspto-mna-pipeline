@@ -29,8 +29,10 @@ SELECT
     -- 4. Calculated Features (e.g., Asset Age at time of transfer)
     DATEDIFF('day', p.document_date, t.recorded_date) AS days_since_publication
 
-FROM {{ ref('fct_assignment_bridge') }} f
+FROM {{ ref('fct_assignment_bridge') }} AS f
 -- Join back to the Dimensions to fetch the text attributes
-INNER JOIN {{ ref('dim_patents') }} p ON f.patent_sk = p.patent_sk
-INNER JOIN {{ ref('dim_assignees') }} a ON f.assignee_sk = a.assignee_sk
-INNER JOIN {{ ref('dim_assignments') }} t ON f.assignment_sk = t.assignment_sk
+INNER JOIN {{ ref('dim_patents') }} AS p ON f.patent_sk = p.patent_sk
+INNER JOIN {{ ref('dim_assignees') }} AS a ON f.assignee_sk = a.assignee_sk
+INNER JOIN
+    {{ ref('dim_assignments') }} AS t
+    ON f.assignment_sk = t.assignment_sk
