@@ -45,7 +45,8 @@ GRANT ALL PRIVILEGES ON FUTURE SCHEMAS IN DATABASE USPTO_DB TO ROLE USPTO_ROLE;
 -- 10. Automation Privileges (The missing link for your error)
 -- EXECUTE TASK is an ACCOUNT-level privilege. You cannot grant it on a specific database.
 GRANT EXECUTE TASK ON ACCOUNT TO ROLE USPTO_ROLE;
-GRANT EXECUTE MANAGED TASK ON ACCOUNT TO ROLE USPTO_ROLE; -- Required if you switch to Serverless Tasks
+-- MANAGED TASK currently not recognized by sqlfluff so we add a condition to exclude the line of code below from the sqlfluff checks
+GRANT EXECUTE MANAGED TASK ON ACCOUNT TO ROLE USPTO_ROLE; -- noqa: PRS
 
 -- 11. Pipe Privileges (For Snowpipe/Streams later)
 GRANT CREATE PIPE ON SCHEMA USPTO_DB.RAW TO ROLE USPTO_ROLE;
