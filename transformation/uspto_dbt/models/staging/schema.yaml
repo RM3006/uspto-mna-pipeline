@@ -5,17 +5,31 @@ models:
     description: Staging table for patent assignment records. One row per assignment (Reel/Frame).
     columns:
       - name: reel_number
-        description: Unique identifier for the assignment reel.
         tests:
           - not_null
       - name: frame_number
-        description: Frame number within the reel.
         tests:
           - not_null
       - name: recorded_date
         description: The date the assignment was recorded.
         tests:
           - not_null
+      - name: reel_number
+        description: '{{ doc("common_reel_no") }}'
+      - name: frame_number
+        description: '{{ doc("common_frame_no") }}'
+      - name: conveyance_text
+        description: '{{ doc("common_conveyance_text") }}'
+      - name: page_count
+        description: '{{ doc("common_page_count") }}'
+      - name: last_update_date
+        description: '{{ doc("common_last_update_date") }}'
+      - name: recorded_date
+        description: '{{ doc("common_record_date") }}'
+      - name: filename
+        description: '{{ doc("common_filename") }}'
+      - name: loaded_at
+        description: '{{ doc("audit_loaded_at") }}'
 
   - name: stg_patent_assignees
     description: Staging table for assignees. One row per assignee per assignment.
@@ -27,9 +41,20 @@ models:
         tests:
           - not_null
       - name: assignee_name
-        description: Name of the entity receiving the patent rights.
         tests:
           - not_null
+      - name: reel_number
+        description: '{{ doc("common_reel_no") }}'
+      - name: frame_number
+        description: '{{ doc("common_frame_no") }}'
+      - name: assignee_name
+        description: '{{ doc("common_assignee_name") }}'
+      - name: city
+        description: '{{ doc("common_city") }}'
+      - name: state
+        description: '{{ doc("common_state") }}'
+      - name: country
+        description: '{{ doc("common_country") }}'
 
   - name: stg_patent_properties
     description: Staging table for patents involved in assignments. One row per patent per assignment.
@@ -41,10 +66,21 @@ models:
         tests:
           - not_null
       - name: document_number
-        description: The patent document number (e.g., patent number or publication number).
         tests:
           - not_null
-      - name: document_date
-        description: Publication or issue date of the patent document.
       - name: country
         description: Country code of the patent document (usually US).
+      - name: reel_number
+        description: '{{ doc("common_reel_no") }}'
+      - name: frame_number
+        description: '{{ doc("common_frame_no") }}'
+      - name: document_number
+        description: '{{ doc("common_patent_number") }}'
+      - name: country
+        description: '{{ doc("common_country") }}'
+      - name: kind_code
+        description: '{{ doc("common_kind_code") }}'
+      - name: invention_title
+        description: '{{ doc("common_invention_title") }}'
+      - name: document_date
+        description: '{{ doc("common_doc_date") }}'
