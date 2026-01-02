@@ -1,0 +1,30 @@
+version: 2
+
+macros:
+  - name: get_xml_value
+    description: >
+      A helper function that safely extracts a specific tag's text value from a Snowflake XML object.
+      It wraps the complex `XMLGET(node, 'tag'):"$"::VARCHAR` logic into a readable function.
+    arguments:
+      - name: xml_column
+        description: The XML column or parsed node you are reading from.
+      - name: tag_name
+        description: The name of the XML tag to extract (e.g., 'city', 'reel-no').
+
+  - name: clean_assignee_name
+    description: >
+      Standardizes assignee names to ensure consistent grouping.
+      It removes special characters, trims whitespace, and converts to uppercase.
+    arguments:
+      - name: column_name
+        description: The column containing the raw assignee name.
+
+  - name: generate_schema_name
+    description: >
+      Configures the schema destination for models.
+      Used to differentiate between 'CI' (Continuous Integration), 'DEV', and 'PROD' environments automatically.
+    arguments:
+      - name: custom_schema_name
+        description: The requested schema name from the model config.
+      - name: node
+        description: The node object (provided automatically by dbt).

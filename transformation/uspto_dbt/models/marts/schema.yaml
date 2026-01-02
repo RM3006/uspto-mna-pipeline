@@ -8,42 +8,70 @@ models:
     description: Registry of unique patents found in the assignment data.
     columns:
       - name: patent_sk
-        description: Surrogate Key (MD5 of document_number). Primary Key.
+        description: '{{ doc("common_patent_sk") }}'
         tests:
           - unique
           - not_null
       - name: document_number
-        description: Natural Key (Patent Number).
+        description: '{{ doc("common_patent_number") }}'
         tests:
           - not_null
+      - name: country
+        description: '{{ doc("common_country") }}'
+      - name: kind_code
+        description: '{{ doc("common_kind_code") }}'
+      - name: invention_title
+        description: '{{ doc("common_invention_title") }}'
+      - name: document_date
+        description: '{{ doc("common_doc_date") }}'
+      - name: loaded_at
+        description: '{{ doc("audit_loaded_at") }}'
 
   - name: dim_assignees
     description: Registry of unique companies/entities involved in assignments.
     columns:
       - name: assignee_sk
-        description: Surrogate Key (MD5 of cleaned name). Primary Key.
+        description: '{{ doc("common_assignee_sk") }}'
         tests:
           - unique
           - not_null
       - name: assignee_name
-        description: Normalized name of the entity.
+        description: '{{ doc("common_assignee_name") }}'
         tests:
           - not_null
+      - name: city
+        description: '{{ doc("common_city") }}'
+      - name: state
+        description: '{{ doc("common_state") }}'
+      - name: country
+        description: '{{ doc("common_country") }}'
+      - name: loaded_at
+        description: '{{ doc("audit_loaded_at") }}'
 
   - name: dim_assignments
     description: Registry of unique assignment transactions (Reel/Frame).
     columns:
       - name: assignment_sk
-        description: Surrogate Key (MD5 of Reel + Frame). Primary Key.
+        description: '{{ doc("common_assignment_sk") }}'
         tests:
           - unique
           - not_null
       - name: reel_number
+        description: '{{ doc("common_reel_no") }}'
         tests:
           - not_null
       - name: frame_number
+        description: '{{ doc("common_frame_no") }}'
         tests:
           - not_null
+      - name: conveyance_text
+        description: '{{ doc("common_conveyance_text") }}'
+      - name: page_count
+        description: '{{ doc("common_page_count") }}'
+      - name: recorded_date
+        description: '{{ doc("common_record_date") }}'
+      - name: loaded_at
+        description: '{{ doc("audit_loaded_at") }}'
 
   # ----------------------------------------------------
   # Facts (The "Bridge" Table)
@@ -53,6 +81,7 @@ models:
     columns:
       # Test: Referential Integrity (Foreign Keys must exist in Dimensions)
       - name: assignment_sk
+        description: '{{ doc("common_assignment_sk") }}'
         tests:
           - not_null
           - relationships:
@@ -61,6 +90,7 @@ models:
                 field: assignment_sk
 
       - name: patent_sk
+        description: '{{ doc("common_patent_sk") }}'
         tests:
           - not_null
           - relationships:
@@ -69,9 +99,56 @@ models:
                 field: patent_sk
 
       - name: assignee_sk
+        description: '{{ doc("common_assignee_sk") }}'
         tests:
           - not_null
           - relationships:
               arguments:
                 to: ref('dim_assignees')
                 field: assignee_sk
+      - name: loaded_at
+        description: '{{ doc("audit_loaded_at")}}'    
+
+  # ----------------------------------------------------
+  # OBT table for data science
+  # ----------------------------------------------------              
+  - name: rpt_data_science_input
+    description: >
+      Denormalized table prepared for Data Science analysis.
+      Aggregates patent acquisition counts by company and location.
+    columns:
+      # --- Patent Details ---
+      - name: document_number
+        description: '{{ doc("common_patent_number") }}'
+      - name: document_date
+        description: '{{ doc("common_doc_date") }}'
+      - name: country
+        description: '{{ doc("common_country") }}'
+      - name: kind_code
+        description: '{{ doc("common_kind_code") }}'
+      - name: invention_title
+        description: '{{ doc("common_invention_title") }}'
+        
+      # --- Assignee Details ---
+      - name: assignee_name
+        description: '{{ doc("common_assignee_name") }}'
+      - name: assignee_city
+        description: '{{ doc("common_city") }}'
+      - name: assignee_state
+        description: '{{ doc("common_state") }}'
+      - name: assignee_country
+        description: '{{ doc("common_country") }}'
+        
+      # --- Transaction Details ---
+      - name: recorded_date
+        description: '{{ doc("common_record_date") }}'
+      - name: conveyance_text
+        description: '{{ doc("common_conveyance_text") }}'
+      - name: reel_number
+        description: '{{ doc("common_reel_no") }}'
+      - name: frame_number
+        description: '{{ doc("common_frame_no") }}'
+        
+      # --- Calculated Features ---
+      - name: days_since_publication
+        description: '{{ doc("common_days_since_pub") }}'
