@@ -1,0 +1,9 @@
+# Ignore dbt artifacts and external packages
+transformation/uspto_dbt/target/
+transformation/uspto_dbt/dbt_packages/
+transformation/uspto_dbt/logs/
+
+# Ignore any temp files
+.git/
+.github/
+__pycache__/

@@ -1,0 +1,81 @@
+name: SQL Quality Check (SQLFluff)
+
+on:
+  push:
+    branches:
+      - main
+      - orchestration
+  pull_request:
+
+jobs:
+  lint-sql:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      # - name: Install Dependencies
+      #   run: |
+      #     pip install sqlfluff==3.2.0
+      #     pip install sqlfluff-templater-dbt==3.2.0
+      #     pip install dbt-snowflake==1.8.0
+          
+      # - name: Create Dummy Profile for dbt
+      #         # We create a fake profile so SQLFluff can "compile" the code
+      #         # We don't need real passwords just to check syntax!
+      #   run: |
+      #     mkdir -p ~/.dbt
+      #     echo "uspto_dbt:" > ~/.dbt/profiles.yml
+      #     echo "  target: prod" >> ~/.dbt/profiles.yml
+      #     echo "  outputs:" >> ~/.dbt/profiles.yml
+      #     echo "    prod:" >> ~/.dbt/profiles.yml
+      #     echo "      type: snowflake" >> ~/.dbt/profiles.yml
+      #     echo "      account: dummy" >> ~/.dbt/profiles.yml
+      #     echo "      user: dummy" >> ~/.dbt/profiles.yml
+      #     echo "      password: dummy" >> ~/.dbt/profiles.yml
+      #     echo "      role: dummy" >> ~/.dbt/profiles.yml
+      #     echo "      database: dummy" >> ~/.dbt/profiles.yml
+      #     echo "      warehouse: dummy" >> ~/.dbt/profiles.yml
+      #     echo "      schema: dummy" >> ~/.dbt/profiles.yml
+      #     echo "      threads: 1" >> ~/.dbt/profiles.yml
+
+
+      - name: Install Dependencies
+        run: |
+          pip install sqlfluff==3.2.0
+          pip install sqlfluff-templater-dbt==3.2.0
+          pip install dbt-duckdb>=1.8.0 
+          pip install dbt-snowflake==1.8.0
+
+      - name: Create Dummy Profile for dbt (DuckDB Mode)
+        run: |
+          mkdir -p ~/.dbt
+          echo "uspto_dbt:" > ~/.dbt/profiles.yml
+          echo "  target: prod" >> ~/.dbt/profiles.yml
+          echo "  outputs:" >> ~/.dbt/profiles.yml
+          echo "    prod:" >> ~/.dbt/profiles.yml
+          echo "      type: duckdb" >> ~/.dbt/profiles.yml
+          echo "      path: '/tmp/dbt.duckdb'" >> ~/.dbt/profiles.yml
+          echo "      threads: 1" >> ~/.dbt/profiles.yml
+
+      # Step 1: Lint the entire dbt project (Models and Tests only)
+      - name: Lint dbt Project (Models and Tests)
+        run: |
+          sqlfluff lint transformation/uspto_dbt --dialect snowflake
+
+      # Step 2: Macros (Needs Jinja templater)
+      # We override the config to use 'jinja' just for this folder
+      - name: Lint dbt Macros (Jinja Templater)
+        run: |
+          sqlfluff lint transformation/uspto_dbt/macros --dialect snowflake --templater jinja
+
+      # Step 3: Lint the Infrastructure scripts (Raw SQL)
+      - name: Lint Infrastructure Scripts
+        run: |
+          sqlfluff lint infrastructure/snowflake --dialect snowflake --templater jinja

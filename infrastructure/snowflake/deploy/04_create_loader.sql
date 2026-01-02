@@ -4,12 +4,12 @@ USE SCHEMA raw;
 
 -- Create a format to split the large XML file into text chunks
 CREATE OR REPLACE FILE FORMAT uspto_xml_splitter_fmt
-    TYPE = 'CSV'
-    COMPRESSION = GZIP
-    FIELD_DELIMITER = NONE
-    RECORD_DELIMITER = '</patent-assignment>' -- Splits file at the closing tag
-    SKIP_HEADER = 0
-    TRIM_SPACE = FALSE;
+TYPE = 'CSV'
+COMPRESSION = GZIP
+FIELD_DELIMITER = NONE
+RECORD_DELIMITER = '</patent-assignment>' -- Splits file at the closing tag
+SKIP_HEADER = 0
+TRIM_SPACE = FALSE;
 
 -- Stored Procedure to load chunks, clean them, and parse into XML
 CREATE OR REPLACE PROCEDURE load_patent_xml_proc()
@@ -59,8 +59,7 @@ CREATE OR REPLACE TASK load_patent_xml_task
     WAREHOUSE = uspto_wh
     SCHEDULE = 'USING CRON 0 1 L * * Europe/Paris'
 AS
-    CALL load_patent_xml_proc()
-;
+    CALL load_patent_xml_proc();
 
 -- 5. Resume the Task
 ALTER TASK load_patent_xml_task RESUME;

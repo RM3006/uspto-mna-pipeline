@@ -1,0 +1,36 @@
+[sqlfluff]
+# 1. Basics
+dialect = snowflake
+templater = dbt
+runaway_limit = 10
+max_line_length = 120
+indent_unit = space
+
+# 2. Scope
+exclude_rules = L031
+
+[sqlfluff:indentation]
+tab_space_size = 4
+indent_unit = space
+indented_joins = False
+indented_ctes = True
+
+[sqlfluff:layout:type:comma]
+spacing_before = touch
+line_position = trailing
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.identifiers]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.functions]
+capitalisation_policy = upper
+
+[sqlfluff:templater:dbt]
+# Point to where dbt_project.yml is
+project_dir = ./transformation/uspto_dbt
+# REMOVED: profiles_dir (defaults to ~/.dbt)
+# REMOVED: profile (defaults to the one in dbt_project.yml)
+target = prod

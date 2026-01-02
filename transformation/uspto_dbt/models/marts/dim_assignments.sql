@@ -1,29 +1,30 @@
-{{config(materialized='table')}}
+{{ config(materialized='table') }}
 
-WITH source as (
-    SELECT
-    reel_number,
-    frame_number,
-    recorded_date,
-    conveyance_text,
-    page_count
-    FROM
-    {{ref('stg_patent_assignments')}}
-)
+WITH
+    source AS (
+        SELECT
+            reel_number,
+            frame_number,
+            recorded_date,
+            conveyance_text,
+            page_count
+        FROM
+            {{ ref('stg_patent_assignments') }}
+    )
 
 SELECT
     --Surrogate Key (composite)
-    MD5(reel_number || frame_number) as assignment_sk,
+    reel_number,
 
     --Natural keys
-    reel_number,
     frame_number,
+    recorded_date,
 
     --Attributes
-    recorded_date,
     conveyance_text,
     page_count,
-    to_timestamp_ntz(convert_timezone('Europe/Paris',current_timestamp())) as loaded_at
+    MD5(reel_number || frame_number) AS assignment_sk,
+    TO_TIMESTAMP_NTZ(CONVERT_TIMEZONE('Europe/Paris', CURRENT_TIMESTAMP()))
+        AS loaded_at
 FROM
     source
-
