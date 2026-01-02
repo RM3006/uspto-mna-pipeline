@@ -57,9 +57,9 @@ jobs:
         run: |
           mkdir -p ~/.dbt
           echo "uspto_dbt:" > ~/.dbt/profiles.yml
-          echo "  target: ci" >> ~/.dbt/profiles.yml
+          echo "  target: prod" >> ~/.dbt/profiles.yml
           echo "  outputs:" >> ~/.dbt/profiles.yml
-          echo "    ci:" >> ~/.dbt/profiles.yml
+          echo "    prod:" >> ~/.dbt/profiles.yml
           echo "      type: duckdb" >> ~/.dbt/profiles.yml
           echo "      path: '/tmp/dbt.duckdb'" >> ~/.dbt/profiles.yml
           echo "      threads: 1" >> ~/.dbt/profiles.yml
