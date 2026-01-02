@@ -136,6 +136,8 @@ services:
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
+    env_file: 
+      - ../.env
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
       interval: 30s
@@ -152,7 +154,8 @@ services:
       - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
       - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
       - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
-      - ../transformation:/opt/airflow/dbt
+      - ../transformation:/opt/airflow/transformation
+      - C:/Users/romen/.dbt/profiles.yml:/home/airflow/.dbt/profiles.yml
 
   # airflow-worker:
   #   <<: *airflow-common
@@ -181,6 +184,8 @@ services:
   airflow-worker:
       # We force the hostname at the container level
       build: .
+      env_file: 
+        - ../.env
       hostname: airflow-worker
       # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.10.4}
       restart: always
@@ -202,7 +207,7 @@ services:
         - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
         - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
         - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
-        - ../transformation:/opt/airflow/dbt
+        - ../transformation:/opt/airflow/transformation
         - C:/Users/romen/.dbt/profiles.yml:/home/airflow/.dbt/profiles.yml
       # THIS IS THE CRITICAL FIX:
       # We wrap it in bash to ensure the flag is passed correctly

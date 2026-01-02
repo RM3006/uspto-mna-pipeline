@@ -56,19 +56,22 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('dim_assignments')
-              field: assignment_sk
+              arguments:
+                to: ref('dim_assignments')
+                field: assignment_sk
 
       - name: patent_sk
         tests:
           - not_null
           - relationships:
-              to: ref('dim_patents')
-              field: patent_sk
+              arguments:
+                to: ref('dim_patents')
+                field: patent_sk
 
       - name: assignee_sk
         tests:
           - not_null
           - relationships:
-              to: ref('dim_assignees')
-              field: assignee_sk
+              arguments:
+                to: ref('dim_assignees')
+                field: assignee_sk
