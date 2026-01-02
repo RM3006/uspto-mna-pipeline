@@ -22,7 +22,6 @@ jobs:
 
       - name: Install Dependencies
         run: |
-        # Upgrade SQLFluff to 3.1.0+ to support dbt 1.8
           pip install sqlfluff==3.2.0
           pip install sqlfluff-templater-dbt==3.2.0
           pip install dbt-snowflake==1.8.0
