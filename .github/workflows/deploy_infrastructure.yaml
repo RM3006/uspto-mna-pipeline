@@ -5,15 +5,15 @@ on:
     branches:
       - main
     paths:
-      # 1. Watch the whole infrastructure folder
+      # Monitor changes within the snowflake infrastructure directory
       - 'infrastructure/snowflake/**'
-      # 2. EXCLUDE the bootstrap folder 
+      # Exclude bootstrap scripts to prevent accidental redeployment
       - '!infrastructure/snowflake/bootstrap/**' 
   workflow_dispatch:
 
 jobs:
   deploy-snowflake-infra:
-    # Using ubuntu-22.04 instead of 'latest' (24.04) to support SnowSQL dependencies
+    # Use Ubuntu 22.04 to ensure compatibility with SnowSQL dependencies
     runs-on: ubuntu-22.04
 
     steps:
@@ -26,7 +26,7 @@ jobs:
           SNOWSQL_DEST=~/bin SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.9-linux_x86_64.bash
 
       - name: Execute Infrastructure Scripts
-        # 3. Snowflake credentials
+        # Set environment variables for SnowSQL authentication
         env:
           SNOWSQL_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT_2 }}
           SNOWSQL_USER: ${{ secrets.SNOWFLAKE_USER_2 }}
@@ -35,10 +35,9 @@ jobs:
         run: |
           echo "Scanning for SQL files..."
           
-          # Elite Move: Use 'find' to dynamically locate files
-          # 1. Look in infrastructure/snowflake
-          # 2. Exclude the bootstrap directory
-          # 3. Sort them (Crucial! So 01 runs before 02)
+          # Dynamically locate SQL files to execute
+          # Exclude the bootstrap directory from the search path
+          # Sort files alphabetically to ensure correct execution sequence
 
           find infrastructure/snowflake -name "*.sql" -not -path "*/bootstrap/*" | sort | while read file; do
             echo "Deploying: $file"

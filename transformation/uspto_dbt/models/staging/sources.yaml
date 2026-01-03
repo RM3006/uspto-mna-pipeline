@@ -1,3 +1,8 @@
+# ----------------------------------------------------------------------------------------------------------------------
+# DOCUMENTATION: Sources
+# Description: Defines the raw data sources for the project, mapping the dbt project to Snowflake tables.
+# ----------------------------------------------------------------------------------------------------------------------
+
 version: 2
 
 sources:
@@ -6,4 +11,3 @@ sources:
       schema: raw
       tables:
         - name: patent_assignment_xml
-

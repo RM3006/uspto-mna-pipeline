@@ -1,21 +1,21 @@
-# 1. The Snowflake Reader Role (Identity + Trust Policy)
+# 1. Create IAM Role for Snowflake to assume (Identity and Trust Policy)
 resource "aws_iam_role" "snowflake_reader" {
   name = "uspto_snowflake_reader_role"
 
-  # TRUST POLICY: This connects Snowflake to AWS
+  # Configure Trust Policy to connect Snowflake with AWS
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
         Effect = "Allow"
         Principal = {
-          # Get STORAGE_AWS_IAM_USER_ARN value from the storage integration in snowflake
+          # Set the ARN from the STORAGE_AWS_IAM_USER_ARN value in Snowflake
           AWS = "arn:aws:iam::260512157176:user/e8z81000-s" 
         }
         Action = "sts:AssumeRole"
         Condition = {
           StringEquals = {
-            # Get STORAGE_AWS_EXTERNAL_ID value from the storage integration in snowflake
+            # Set the External ID from the STORAGE_AWS_EXTERNAL_ID value in Snowflake
             "sts:ExternalId" = "JM43233_SFCRole=4_tWa/XUiHv3UXmxSkBpnSe3PeupY=" 
           }
         }
@@ -24,7 +24,7 @@ resource "aws_iam_role" "snowflake_reader" {
   })
 }
 
-# 2. The Permissions Policy (What Snowflake can DO)
+# 2. Define IAM Policy to grant read access to the S3 bucket
 resource "aws_iam_policy" "snowflake_read_policy" {
   name        = "uspto_snowflake_read_access"
   description = "Allows Snowflake to read from the USPTO bucket"
@@ -48,13 +48,13 @@ resource "aws_iam_policy" "snowflake_read_policy" {
   })
 }
 
-# 3. Attach Permissions to Role
+# 3. Attach the read policy to the Snowflake reader role
 resource "aws_iam_role_policy_attachment" "attach_read_snowflake" {
   role       = aws_iam_role.snowflake_reader.name
   policy_arn = aws_iam_policy.snowflake_read_policy.arn
 }
 
-# 4. Output the ARN (Required for Snowflake Integration)
+# 4. Output the Role ARN for configuration in Snowflake Integration
 output "snowflake_role_arn" {
   value = aws_iam_role.snowflake_reader.arn
 }

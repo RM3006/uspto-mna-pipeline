@@ -1,3 +1,8 @@
+# ----------------------------------------------------------------------------------------------------------------------
+# DOCUMENTATION: Staging Models
+# Description: detailed documentation for staging models, including column descriptions and data quality tests.
+# ----------------------------------------------------------------------------------------------------------------------
+
 version: 2
 
 models:

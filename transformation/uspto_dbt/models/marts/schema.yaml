@@ -1,11 +1,11 @@
 version: 2
 
 models:
-  # ----------------------------------------------------
+  # --------------------------------------------------------------------------------------------------------------------
   # Dimensions (The "Lookup" Tables)
-  # ----------------------------------------------------
+  # --------------------------------------------------------------------------------------------------------------------
   - name: dim_patents
-    description: Registry of unique patents found in the assignment data.
+    description: Registry of unique patents identified in the assignment data.
     columns:
       - name: patent_sk
         description: '{{ doc("common_patent_sk") }}'
@@ -28,7 +28,7 @@ models:
         description: '{{ doc("audit_loaded_at") }}'
 
   - name: dim_assignees
-    description: Registry of unique companies/entities involved in assignments.
+    description: Registry of unique companies or entities involved in assignments.
     columns:
       - name: assignee_sk
         description: '{{ doc("common_assignee_sk") }}'
@@ -49,7 +49,7 @@ models:
         description: '{{ doc("audit_loaded_at") }}'
 
   - name: dim_assignments
-    description: Registry of unique assignment transactions (Reel/Frame).
+    description: Registry of unique assignment transactions identified by Reel and Frame numbers.
     columns:
       - name: assignment_sk
         description: '{{ doc("common_assignment_sk") }}'
@@ -73,13 +73,13 @@ models:
       - name: loaded_at
         description: '{{ doc("audit_loaded_at") }}'
 
-  # ----------------------------------------------------
+  # --------------------------------------------------------------------------------------------------------------------
   # Facts (The "Bridge" Table)
-  # ----------------------------------------------------
+  # --------------------------------------------------------------------------------------------------------------------
   - name: fct_assignment_bridge
-    description: Link table connecting Assignments, Patents, and Assignees.
+    description: Association table linking Assignments, Patents, and Assignees.
     columns:
-      # Test: Referential Integrity (Foreign Keys must exist in Dimensions)
+      # Data Quality Test: Ensure Referential Integrity by validating Foreign Keys against Dimensions
       - name: assignment_sk
         description: '{{ doc("common_assignment_sk") }}'
         tests:
@@ -109,15 +109,15 @@ models:
       - name: loaded_at
         description: '{{ doc("audit_loaded_at")}}'    
 
-  # ----------------------------------------------------
+  # --------------------------------------------------------------------------------------------------------------------
   # OBT table for data science
-  # ----------------------------------------------------              
+  # --------------------------------------------------------------------------------------------------------------------              
   - name: rpt_data_science_input
     description: >
-      Denormalized table prepared for Data Science analysis.
-      Aggregates patent acquisition counts by company and location.
+      Denormalized view aggregating patent acquisition features for Data Science analysis.
+      Granularity: One row per Patent-Assignee-Assignment interaction.
     columns:
-      # --- Patent Details ---
+      # --- Patent Features ---
       - name: document_number
         description: '{{ doc("common_patent_number") }}'
       - name: document_date
@@ -129,7 +129,7 @@ models:
       - name: invention_title
         description: '{{ doc("common_invention_title") }}'
         
-      # --- Assignee Details ---
+      # --- Assignee Features ---
       - name: assignee_name
         description: '{{ doc("common_assignee_name") }}'
       - name: assignee_city
@@ -139,7 +139,7 @@ models:
       - name: assignee_country
         description: '{{ doc("common_country") }}'
         
-      # --- Transaction Details ---
+      # --- Transaction Features ---
       - name: recorded_date
         description: '{{ doc("common_record_date") }}'
       - name: conveyance_text
