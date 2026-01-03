@@ -1,9 +1,10 @@
 
 
-/*
-    Dimension: dim_assignees
-    Grain: One row per unique Assignee Name.
-    Description: Contains static attributes of the assignee (Address, Location).
+/* ---------------------------------------------------------------------------------------------------------------------
+   Dimension: dim_assignees
+   Grain: One row per unique Assignee Name.
+   Description: Stores static attributes of the assignee including address and location details.
+   ---------------------------------------------------------------------------------------------------------------------
 */
 WITH
     source AS (
@@ -20,7 +21,7 @@ WITH
 
     deduplicated_assignees AS (
         SELECT
-        -- Normalize name to uppercase to catch basic duplicates (e.g., "Google" vs "GOOGLE")
+        -- Standardize assignee names to uppercase to resolve simple duplicates
             
 UPPER(TRIM(assignee_name))
  AS assignee_name_clean,
@@ -29,7 +30,7 @@ UPPER(TRIM(assignee_name))
             state,
             country
         FROM source
-        -- Deduplicate: Retain the address from the most recent assignment
+        -- Deduplicate records by retaining the address information from the most recent assignment
         QUALIFY ROW_NUMBER() OVER (
             PARTITION BY UPPER(TRIM(assignee_name))
             ORDER BY reel_number DESC, frame_number DESC

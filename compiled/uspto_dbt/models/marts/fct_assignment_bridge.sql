@@ -1,8 +1,10 @@
 
 
-/*
-    Mart: fct_assignment_bridge
-    Grain: One row per Assignee per Patent per Assignment.
+/* ---------------------------------------------------------------------------------------------------------------------
+   Mart: fct_assignment_bridge
+   Grain: One row per Assignee per Patent per Assignment.
+   Description: Serves as the link between dimensions to model the many-to-many relationships.
+   ---------------------------------------------------------------------------------------------------------------------
 */
 
 WITH
@@ -26,7 +28,7 @@ SELECT
     MD5(p.reel_number || p.frame_number) AS assignment_sk,
     MD5(p.document_number) AS patent_sk,
 
-    -- Use the same macro here to guarantee the keys match the Dimension
+    -- Apply the cleaning macro to ensure surrogate keys match the records in the Dimension table
     MD5(
 UPPER(TRIM(a.assignee_name))
 ) AS assignee_sk,

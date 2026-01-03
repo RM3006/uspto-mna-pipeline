@@ -1,9 +1,10 @@
 
 
-/*
-    Dimension: dim_patents
-    Grain: One row per unique Patent Document Number.
-    Description: Contains static attributes of a patent (Date, Title, Country).
+/* ---------------------------------------------------------------------------------------------------------------------
+   Dimension: dim_patents
+   Grain: One row per unique Patent Document Number.
+   Description: Stores static attributes of a patent such as publication date, title, and country of origin.
+   ---------------------------------------------------------------------------------------------------------------------
 */
 
 WITH
@@ -18,7 +19,8 @@ WITH
             frame_number
         FROM USPTO_DB.ANALYTICS_staging.stg_patent_properties
 
-        -- Deduplicate: Keep only the entry from the most recent assignment (Highest Reel No)
+        -- Deduplicate records by retaining only the entry from the most recent assignment
+        -- Order by Reel and Frame number descending to identify the latest record
         QUALIFY
             ROW_NUMBER()
                 OVER (

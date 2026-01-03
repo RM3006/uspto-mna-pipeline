@@ -4,7 +4,7 @@
 WITH
     source AS (
         SELECT
-        -- Extract keys early to avoid passing heavy XML blobs downstream
+        -- Extract unique identifiers early to minimize data volume in downstream operations
             XMLGET(
                 XMLGET(xml_content, 'assignment-record'), 'reel-no'
             ):"$"::VARCHAR AS reel_number,
@@ -12,10 +12,10 @@ WITH
                 XMLGET(xml_content, 'assignment-record'), 'frame-no'
             ):"$"::VARCHAR AS frame_number,
 
-            -- Pre-calculate the node to flatten (Extract once per file)
+            -- Pre-extract the 'patent-properties' node once per file to speed up flattening
             XMLGET(xml_content, 'patent-properties'):"$" AS properties_node
         FROM uspto_db.raw.patent_assignment_xml
-        -- Deduplicate before parsing to save compute resources
+        -- Deduplicate records based on content hash
         QUALIFY
             ROW_NUMBER()
                 OVER (PARTITION BY MD5(xml_content) ORDER BY loaded_at DESC)
@@ -31,7 +31,7 @@ WITH
             LATERAL FLATTEN(
                 input =>
                 CASE
-                -- Logic is now faster as it uses the pre-extracted node
+                -- Handle both array and single-node structures using the pre-extracted node
                     WHEN IS_ARRAY(source.properties_node) THEN source.properties_node
                     WHEN
                         source.properties_node IS NOT NULL
@@ -45,7 +45,7 @@ SELECT
     reel_number,
     frame_number,
 
-    -- Extract document details from the flattened patent node
+    -- Extract detailed patent attributes from the flattened node
     XMLGET(XMLGET(patent_node, 'document-id'), 'doc-number'):"$"::VARCHAR
         AS document_number,
     XMLGET(XMLGET(patent_node, 'document-id'), 'country'):"$"::VARCHAR
@@ -54,7 +54,7 @@ SELECT
         AS kind_code,
     XMLGET(patent_node, 'invention-title'):"$"::VARCHAR AS invention_title,
 
-    -- Extract invention title
+    -- Extract and cast the document date
     TRY_TO_DATE(
         XMLGET(XMLGET(patent_node, 'document-id'), 'date'):"$"::VARCHAR,
         'YYYYMMDD'
