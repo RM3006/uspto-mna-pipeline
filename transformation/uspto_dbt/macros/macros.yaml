@@ -1,3 +1,8 @@
+# ----------------------------------------------------------------------------------------------------------------------
+# DOCUMENTATION: Macro Definitions
+# Description: Defines metadata and arguments for project-specific macros to populate dbt documentation.
+# ----------------------------------------------------------------------------------------------------------------------
+
 version: 2
 
 macros:

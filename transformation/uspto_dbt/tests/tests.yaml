@@ -3,5 +3,5 @@ version: 2
 data_tests:
   - name: assert_assignee_name_is_present
     description: >
-      Data Quality Check: Ensures that no record in the staging table has a NULL assignee name.
-      If this test fails, it indicates a parsing error or a corrupted XML source file.
+      Data Quality Test: Validates that no record in the staging table has a NULL assignee name.
+      Failure indicates a parsing error or corrupted XML source file.

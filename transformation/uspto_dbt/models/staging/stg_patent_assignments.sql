@@ -10,13 +10,14 @@ WITH
         SELECT *
         FROM
             {{ source( 'uspto', 'patent_assignment_xml') }}
+        -- Deduplicate records based on content hash, retaining the latest load
         QUALIFY
             ROW_NUMBER()
                 OVER (PARTITION BY MD5(xml_content) ORDER BY loaded_at DESC)
             = 1
     ),
 
-    -- Step 1: Extracting the 'record_node' first. 
+    -- Extract the root 'assignment-record' node to simplify downstream parsing
     xml_root AS (
         SELECT
             file_name,
@@ -25,20 +26,20 @@ WITH
         FROM source
     ),
 
-    -- Step 2: Using 'record_node' to get the fields
+    -- Parse specific fields from the extracted record node
     parsed AS (
         SELECT
             file_name,
             loaded_at,
 
-            -- Extract High-Level Fields (using the logic we verified)
+            -- Extract core assignment metadata
             XMLGET(record_node, 'reel-no'):"$"::VARCHAR AS reel_number,
             XMLGET(record_node, 'frame-no'):"$"::VARCHAR AS frame_number,
             XMLGET(record_node, 'conveyance-text'):"$"::VARCHAR
                 AS conveyance_text,
             XMLGET(record_node, 'page-count'):"$"::INTEGER AS page_count,
 
-            -- Dates require careful handling (XML dates often need casting)
+            -- Extract and cast dates, converting from XML string format to Date type
             TRY_TO_DATE(
                 XMLGET(
                     XMLGET(record_node, 'recorded-date'), 'date'
